@@ -17,7 +17,10 @@ async def ping(ctx):
 def print_contents(message):
     now = datetime.datetime.now()
     os.system("echo {} > /dev/usb/lp0".format(now))
-    os.system("echo \"{}\" > /dev/usb/lp0".format(message.content))
+    path = f"/tmp/{uuid.uuid4()}.txt"
+    with open(path, "w") as file:
+            file.write(str(message.content))    
+    os.system("cat {} | python /home/pi/pppppprint/print.py > /dev/usb/lp0".format(path))
 
 
 @bot.listen()
@@ -46,7 +49,7 @@ async def on_message(message):
                         c.save(filename=converted_path)
                         await message.reply(converted_path)
                         print_contents(message)
-                        os.system("/home/pi/png2pos/prrrrint.sh \"{}\"".format(converted_path))
+                        os.system(f"/home/pi/png2pos/prrrrint.sh {converted_path}")
                     except Exception as e:
                         print(f"{e}")
 
