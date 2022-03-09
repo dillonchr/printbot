@@ -28,6 +28,17 @@ async def q(ctx, *args):
     answers = []
 
 
+@bot.command()
+async def reset(ctx):
+    global in_question
+    global answers
+    in_question = False
+    answers = []
+    print_text("Aborting the last question!")
+    await ctx.send("ok. u the boss. as u were.")
+
+
+
 def print_text(content):
     now = datetime.datetime.now()
     os.system("echo {} > /dev/usb/lp0".format(now))
