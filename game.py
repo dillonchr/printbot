@@ -1,5 +1,6 @@
 import os
 import discord
+import random
 from discord.ext import commands
 import requests
 import uuid
@@ -9,6 +10,8 @@ import datetime
 
 load_dotenv()
 bot = commands.Bot(command_prefix='>')
+in_question = False
+answers = []
 
 @bot.command()
 async def ping(ctx):
@@ -16,9 +19,13 @@ async def ping(ctx):
 
 
 @bot.command()
-async def question(ctx, *args):
+async def q(ctx, *args):
+    global in_question
+    global answers
     await ctx.send("go ahead, caller. i'm listening")
     print_text(f"[=]Q\n\n{' '.join(args)}")
+    in_question = True
+    answers = []
 
 
 def print_text(content):
@@ -34,12 +41,29 @@ def print_contents(message):
     print_text(message.content)
 
 
+def received_answer(message):
+    global in_question
+    global answers
+
+    answers.append(message.content)
+    if len(answers) == 5:
+        in_question = False
+        random.shuffle(answers)
+        print_answers = "\n...-\n".join(answers)
+        print_text(f"[=]A's\n\n{print_answers}")
+        answers = []
+
 @bot.listen()
 async def on_message(message):
+    global in_question
+    global answers
     if not message.author.bot and message.channel.type == discord.ChannelType.private and not message.content.startswith(">"):
         if not message.attachments or message.attachments.count == 0:
-            print_contents(message)
-            await message.reply("hello")
+            if in_question and len(answers) < 5:
+                received_answer(message)
+            else:
+                print_contents(message)
+                await message.reply("hello")
         else:
             for a in message.attachments:
                 url = a.proxy_url
