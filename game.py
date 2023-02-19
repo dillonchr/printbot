@@ -44,7 +44,7 @@ def print_text(content):
     os.system("echo {} > /dev/usb/lp0".format(now))
     path = f"/tmp/{uuid.uuid4()}.txt"
     with open(path, "w") as file:
-            file.write(str(content))    
+            file.write(str(content))
     os.system("cat {} | python /home/pi/pppppprint/print.py > /dev/usb/lp0".format(path))
 
 

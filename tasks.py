@@ -47,7 +47,7 @@ if "__main__" == __name__:
 
             tomorrow = today + datetime.timedelta(days=1)
             cursor.execute(
-                "SELECT title, STRFTIME('%H:%M', due) AS hour FROM tasks WHERE due BETWEEN DATE('now', 'localtime', 'start of day') AND DATE('now', 'localtime', 'start of day', '+1 day')"
+                "SELECT title, due FROM tasks WHERE due BETWEEN DATE('now', 'localtime', 'start of day') AND DATE('now', 'localtime', 'start of day', '+1 day')"
             )
 
             due_tasks = cursor.fetchall()
@@ -56,5 +56,5 @@ if "__main__" == __name__:
 
                 for label, due in due_tasks:
                     print(f"( )|=|{label}")
-                    print(f"=>{due}")
+                    print(f"=>{datetime.datetime.fromisoformat(due).strftime('%I:%M %p')}")
 
