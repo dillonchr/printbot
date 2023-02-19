@@ -1,5 +1,7 @@
+from contextlib import closing
 from collections import namedtuple
 import datetime
+import sqlite3
 
 Task = namedtuple("Task", ["label", "duration"])
 
@@ -52,11 +54,12 @@ def print_bar(minutes):
 
 
 if "__main__" == __name__:
-    today = datetime.date.today()
-    print(f"[=]{today.strftime('%b %d, %Y')}")
-    tasks = schedule["everyday"] + schedule[today.strftime("%A")]
-    for task in tasks:
-        print(f"<=>{task.label} ({human_readable_duration(task.duration)})")
-        print(f"{print_bar(task.duration)}")
-        print("")
+    with closing(sqlite3.connect("tasks.db")) as connection:
+        with closing(connection.cursor()) as cursor:
+            today = datetime.date.today()
+            print(f"[=]{today.strftime('%b %d, %Y')}")
+            for day, label, duration in cursor.execute("SELECT day, title, duration FROM tasks WHERE day in ('all', ?)", (today,)):
+                print(f"<=>{label} ({human_readable_duration(duration)})")
+                print(f"{print_bar(duration)}")
+                print("")
 
