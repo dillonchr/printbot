@@ -3,27 +3,6 @@ from collections import namedtuple
 import datetime
 import sqlite3
 
-Task = namedtuple("Task", ["label", "duration"])
-
-schedule = {
-    "everyday": [
-        Task("Personal Study", 20),
-        Task("Walk", 30),
-        Task("TV", 120),
-        Task("Clean House", 20),
-        Task("Trash Collection", 10),
-        Task("Bible Reading", 15)
-    ],
-    "Sunday": [],
-    "Monday": [Task("Prepare for Meeting", 60)],
-    "Tuesday": [],
-    "Wednesday": [Task("Yearbook/Interviews", 10)],
-    "Thursday": [Task("Family Worship", 60)],
-    "Friday": [Task("Watchtower Study", 60)],
-    "Saturday": []
-}
-
-
 def human_readable_duration(d):
     return f"{d}m" if 60 > d else (f"{(d/60):1.1}" if 0 < d % 60 else f"{d//60}h")
 
@@ -58,8 +37,24 @@ if "__main__" == __name__:
         with closing(connection.cursor()) as cursor:
             today = datetime.date.today()
             print(f"[=]{today.strftime('%b %d, %Y')}")
-            for day, label, duration in cursor.execute("SELECT day, title, duration FROM tasks WHERE day in ('all', ?)", (today,)):
+
+            # we will always have something in "all" bucket so not counting results before
+            # printing for this for loop
+            for day, label, duration in cursor.execute("SELECT day, title, duration FROM tasks WHERE day in ('all', ?)", (today.strftime("%A"),)):
                 print(f"<=>{label} ({human_readable_duration(duration)})")
                 print(f"{print_bar(duration)}")
                 print("")
+
+            tomorrow = today + datetime.timedelta(days=1)
+            cursor.execute(
+                "SELECT title, STRFTIME('%H:%M', due) AS hour FROM tasks WHERE due BETWEEN DATE('now', 'localtime', 'start of day') AND DATE('now', 'localtime', 'start of day', '+1 day')"
+            )
+
+            due_tasks = cursor.fetchall()
+            if len(due_tasks):
+                print(f"[=]Due today")
+
+                for label, due in due_tasks:
+                    print(f"( )|=|{label}")
+                    print(f"=>{due}")
 
