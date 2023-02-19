@@ -8,7 +8,7 @@ def human_readable_duration(d):
 
 
 def str_repeater(char, count):
-    return f"{char}".join(["" for i in range(count + 1)])
+    return char * count
 
 
 def print_bar(minutes):
